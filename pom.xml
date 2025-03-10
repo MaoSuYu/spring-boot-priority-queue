@@ -9,23 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.symao</groupId>
-    <artifactId>spring-boot-priority-queue</artifactId>
+    <artifactId>spring-boot-stater-priority-queue</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>spring-boot-priority-queue</name>
-    <description>spring-boot-priority-queue</description>
-    <url/>
-    <licenses>
-        <license/>
-    </licenses>
-    <developers>
-        <developer/>
-    </developers>
-    <scm>
-        <connection/>
-        <developerConnection/>
-        <tag/>
-        <url/>
-    </scm>
+    <name>spring-boot-stater-priority-queue</name>
+    <description>spring-boot-stater-priority-queue</description>
     <properties>
         <java.version>17</java.version>
     </properties>

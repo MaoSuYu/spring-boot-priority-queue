@@ -416,19 +416,29 @@ public class RedisSortedQueue<T> {
      * 更新元素的分数
      * @param item 要更新的元素
      * @param score 新的分数
-     * @return 操作是否成功
+     * @return 更新是否成功
      */
     public boolean updateScore(T item, double score) {
         for (int attempt = 0; attempt < MAX_RETRY; attempt++) {
             try {
+                // 序列化对象
                 String itemJson = objectMapper.writeValueAsString(item);
                 
                 // 使用原子序列号作为微小增量，确保高并发下分数唯一
                 long sequence = SEQUENCE.getAndIncrement() % 1000000;
                 double uniqueScore = score + (sequence / 1000000000.0);
                 
+                logger.debug("尝试更新元素分数为: {}", uniqueScore);
+                
+                // 检查元素是否存在
+                Double oldScore = redisTemplate.opsForZSet().score(queueKey, itemJson);
+                
+                // 更新元素分数
                 Boolean result = redisTemplate.opsForZSet().add(queueKey, itemJson, uniqueScore);
-                if (result != null && result) {
+                
+                // 如果元素不存在，则result为true表示添加成功
+                // 如果元素已存在，则result为false，但分数可能已经更新
+                if ((result != null && result) || oldScore != null) {
                     logger.debug("更新元素分数成功，新分数: {}", uniqueScore);
                     return true;
                 } else {
@@ -437,8 +447,7 @@ public class RedisSortedQueue<T> {
                     Thread.sleep(RETRY_DELAY_MS);
                 }
             } catch (Exception e) {
-                logger.warn("更新元素分数时出错，等待{}ms后重试，当前尝试次数: {}/{}", 
-                        RETRY_DELAY_MS, attempt + 1, MAX_RETRY, e);
+                logger.error("更新元素分数时发生错误", e);
                 if (attempt == MAX_RETRY - 1) {
                     throw new QueueException("更新元素分数失败，已达到最大重试次数", e);
                 }
